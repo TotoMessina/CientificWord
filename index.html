@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Científico Visual</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toolbar" contenteditable="false">
+    <div class="group">
+      <button class="section-toggle">▶ Mate₂máticas</button>
+      <div class="section">
+        <button onclick="insertSup()">x²</button>
+        <button onclick="insertSub()">H₂O</button>
+        <button onclick="insertFraction()">a/b</button>
+        <button onclick="insertEMC()">E = mc²</button>
+        <button onclick="insertSymbol('∑')">∑</button>
+        <button onclick="insertSymbol('∂')">∂</button>
+        <button onclick="insertSymbol('∫')">∫</button>
+        <button onclick="insertSymbol('∆')">∆</button>
+        <button onclick="insertSymbol('∞')">∞</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <button class="section-toggle">▶ Física / Química</button>
+      <div class="section">
+        <button onclick="insertSymbol('→')">→</button>
+        <button onclick="insertSymbol('⇌')">⇌</button>
+        <button onclick="insertSymbol('°C')">°C</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <button class="section-toggle">▶ Símbolos Griegos</button>
+      <div class="section">
+        <button onclick="insertSymbol('α')">α</button>
+        <button onclick="insertSymbol('β')">β</button>
+        <button onclick="insertSymbol('γ')">γ</button>
+        <button onclick="insertSymbol('θ')">θ</button>
+        <button onclick="insertSymbol('λ')">λ</button>
+        <button onclick="insertSymbol('π')">π</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button onclick="saveContent()">💾 Guardar ahora</button>
+    <button onclick="resetContent()">🔁 Reiniciar documento</button>
+    <button onclick="exportHTML()">📄 Exportar HTML</button>
+    <button onclick="exportDocx()">📃 Exportar DOCX</button>
+    <button onclick="exportPDF()">📕 Exportar PDF</button>
+    <button onclick="openPreview()">🖼 Vista previa</button>
+  </div>
+
+  <div id="editor" contenteditable="true"></div>
+
+  <div id="previewModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closePreview()">&times;</span>
+        <div id="previewContent"></div>
+    </div>
+  </div>
+
+
+  <script src="script.js"></script>
+</body>
+</html>
