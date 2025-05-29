@@ -1,17 +1,36 @@
+:root {
+  --bg-light: #f8f9fa;
+  --bg-dark: #121212;
+  --primary: #2c3e50;
+  --primary-hover: #1a252f;
+  --accent: #3498db;
+  --accent-hover: #2980b9;
+  --text-light: #f1f1f1;
+  --text-dark: #333;
+  --border-light: #ccc;
+  --border-dark: #444;
+}
+
 body {
-  font-family: sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  background: #f8f9fa;
+  background: var(--bg-light);
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+}
+
+body.dark {
+  background: var(--bg-dark);
+  color: var(--text-light);
 }
 
 #toolbar {
   background: #e0e7ef;
   padding: 10px;
-  border-bottom: 2px solid #2c3e50;
+  border-bottom: 2px solid var(--primary);
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  user-select: none;
 }
 
 .group {
@@ -20,13 +39,19 @@ body {
 }
 
 .section-toggle {
-  background: #2c3e50;
+  background: var(--primary);
   color: white;
   font-weight: bold;
-  padding: 4px 10px;
+  padding: 6px 10px;
   cursor: pointer;
   border: none;
+  border-radius: 5px;
   margin-bottom: 5px;
+  transition: background 0.3s;
+}
+
+.section-toggle:hover {
+  background: var(--primary-hover);
 }
 
 .section {
@@ -36,23 +61,83 @@ body {
 }
 
 .section button {
-  background: #3498db;
+  background: var(--accent);
   border: none;
   color: white;
-  padding: 5px 8px;
+  padding: 6px 10px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .section button:hover {
-  background: #2980b9;
+  background: var(--accent-hover);
+}
+
+#controls {
+  padding: 12px 20px;
+  background: #f1f1f1;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#controls button {
+  padding: 8px 14px;
+  font-weight: bold;
+  border: none;
+  background: var(--primary);
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#controls button:hover {
+  background: var(--primary-hover);
+}
+
+select,
+input[type="number"],
+input[type="text"] {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+  font-size: 14px;
 }
 
 #editor {
-  padding: 20px;
-  min-height: 400px;
-  font-size: 20px;
+  width: 21cm;
+  min-height: 29.7cm;
+  margin: 20px auto;
+  padding: 2cm;
   background: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+body.dark #editor {
+  background: #1e1e1e;
+  color: var(--text-light);
+  border-color: var(--border-dark);
+}
+
+body.dark #controls,
+body.dark .modal-content {
+  background: #1e1e1e;
+  color: var(--text-light);
+  border-color: var(--border-dark);
+}
+
+body.dark button {
+  background: #333;
+  color: var(--text-light);
+}
+
+body.dark button:hover {
+  background: #555;
 }
 
 .fraction {
@@ -61,7 +146,9 @@ body {
   margin: 0 5px;
 }
 
-.fraction > span {
+.fraction > span,
+sup[contenteditable],
+sub[contenteditable] {
   display: block;
   min-width: 1ch;
   padding: 0 2px;
@@ -69,39 +156,11 @@ body {
 }
 
 .fraction .top {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid;
 }
 
 .fraction .bottom {
   font-size: 0.9em;
-}
-
-sup[contenteditable], sub[contenteditable] {
-  padding: 0 2px;
-  outline: none;
-  display: inline-block;
-  min-width: 1ch;
-}
-
-#controls {
-  padding: 10px 20px;
-  background: #f1f1f1;
-  border-top: 1px solid #ccc;
-}
-
-#controls button {
-  margin-right: 10px;
-  padding: 6px 12px;
-  font-weight: bold;
-  border: none;
-  background: #2c3e50;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#controls button:hover {
-  background: #1a252f;
 }
 
 .modal {
@@ -111,13 +170,14 @@ sup[contenteditable], sub[contenteditable] {
   left: 0; top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content {
-  background-color: white;
-  margin: 5% auto;
+  background: white;
+  margin: auto;
   padding: 20px;
   width: 80%;
   max-height: 80%;
@@ -126,9 +186,109 @@ sup[contenteditable], sub[contenteditable] {
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-.close-button {
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+.preview-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-window {
+  background: white;
+  padding: 20px;
+  width: 80%;
+  border-radius: 8px;
+  box-shadow: 0 0 15px #000;
+  overflow-y: auto;
+}
+
+#counter {
+  margin: 10px 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.dark #counter {
+  color: #ccc;
+}
+
+#editor img {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#historyPanel {
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 1rem;
+  font-size: 14px;
+}
+
+#historyPanel ul {
+  list-style: none;
+  padding: 0;
+}
+
+#historyPanel li {
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
   cursor: pointer;
+}
+
+#historyPanel li:hover {
+  background-color: #ddd;
+}
+
+#historyPanel li.saved {
+  font-weight: bold;
+  color: green;
+}
+
+.header-footer {
+  background: #f0f0f0;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+#footer {
+  margin-top: 20px;
+}
+
+body.dark .header-footer {
+  background: #222;
+  color: white;
+  border-color: #444;
+}
+
+.reference-list {
+  list-style: decimal;
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+#referenceSection {
+  margin-top: 40px;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+
+body.landscape #editor {
+  width: 29.7cm;
+  min-height: 21cm;
+}
+
+body.letter #editor {
+  width: 21.6cm;
+  min-height: 27.9cm;
 }

@@ -3,7 +3,7 @@
 **Versión:** 1.0.0  
 **Estado del Proyecto:** 🚀 En Desarrollo
 
-![Preview del Proyecto](url(/CientificWord-1-0-0.png))  
+![Preview del Proyecto](/CientificWord-1-0-0.png)  
 
 ## 📝 Descripción
 
