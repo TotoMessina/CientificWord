@@ -1,13 +1,34 @@
 // Utils
 const getEditor = () => document.getElementById("editor");
+let isReadOnly = false;
+// Inserciones rápidas
+const insertSup = () => insertHTMLAtCursor(`<sup contenteditable="true">2</sup>`);
+const insertSub = () => insertHTMLAtCursor(`<sub contenteditable="true">2</sub>`);
+const insertFraction = () => insertHTMLAtCursor(`
+  <span class="fraction">
+    <span class="top" contenteditable="true">a</span>
+    <span class="bottom" contenteditable="true">b</span>
+  </span>`);
+const insertSymbol = sym => insertHTMLAtCursor(sym);
+const insertEMC = () => insertHTMLAtCursor(`E = mc<sup contenteditable="true">2</sup>`);
+// Historial y deshacer
+let undoStack = [];
+let redoStack = [];
+let isTyping = false;
+let historyStack = JSON.parse(localStorage.getItem("historial")) || [];
+let lastSavedIndex = historyStack.length - 1;
 
-// Secciones plegables
+// Secciones plegables con animación
 document.querySelectorAll(".section-toggle").forEach(button => {
   button.addEventListener("click", () => {
-    const section = button.nextElementSibling;
-    section.style.display = section.style.display === "flex" ? "none" : "flex";
+    const content = button.nextElementSibling;
+    content.classList.toggle("open");
   });
 });
+
+// Títulos numerados
+let sectionNumbers = [0, 0, 0];
+let references = JSON.parse(localStorage.getItem("references")) || [];
 
 // Inserción HTML
 function insertHTMLAtCursor(html) {
@@ -30,17 +51,6 @@ function insertHTMLAtCursor(html) {
   sel.removeAllRanges();
   sel.addRange(range);
 }
-
-// Inserciones rápidas
-const insertSup = () => insertHTMLAtCursor(`<sup contenteditable="true">2</sup>`);
-const insertSub = () => insertHTMLAtCursor(`<sub contenteditable="true">2</sub>`);
-const insertFraction = () => insertHTMLAtCursor(`
-  <span class="fraction">
-    <span class="top" contenteditable="true">a</span>
-    <span class="bottom" contenteditable="true">b</span>
-  </span>`);
-const insertSymbol = sym => insertHTMLAtCursor(sym);
-const insertEMC = () => insertHTMLAtCursor(`E = mc<sup contenteditable="true">2</sup>`);
 
 // Contador
 function updateCounter() {
@@ -91,16 +101,6 @@ function resetContent() {
     localStorage.removeItem("editorContent");
   }
 }
-
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem("editorContent");
-  if (saved) getEditor().innerHTML = saved;
-  updateCounter();
-
-  // Dark mode
-  const darkPref = localStorage.getItem("darkMode");
-  if (darkPref === "true") document.body.classList.add("dark");
-});
 
 function toggleDarkMode() {
   document.body.classList.toggle("dark");
@@ -168,9 +168,6 @@ function updatePageStyle() {
   getEditor().style.padding = `${margin}cm`;
 }
 
-// Títulos numerados
-let sectionNumbers = [0, 0, 0];
-
 function insertHeading(level) {
   sectionNumbers[level - 1]++;
   for (let i = level; i < sectionNumbers.length; i++) sectionNumbers[i] = 0;
@@ -182,13 +179,6 @@ function insertHeading(level) {
   heading.style.margin = "10px 0";
   insertNodeAtCursor(heading);
 }
-
-// Historial y deshacer
-let undoStack = [];
-let redoStack = [];
-let isTyping = false;
-let historyStack = JSON.parse(localStorage.getItem("historial")) || [];
-let lastSavedIndex = historyStack.length - 1;
 
 function saveState() {
   if (!isTyping) return;
@@ -279,27 +269,8 @@ function toggleHistory() {
   panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
 
-// Eventos globales
-getEditor().addEventListener("input", () => {
-  isTyping = true;
-  clearTimeout(window._typeTimer);
-  window._typeTimer = setTimeout(saveState, 400);
-});
-
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key === "z") {
-    e.preventDefault(); undo();
-  }
-  if (e.ctrlKey && (e.key === "y" || (e.shiftKey && e.key === "Z"))) {
-    e.preventDefault(); redo();
-  }
-});
-
 // Referencias
 // Manejo de referencias
-
-let references = JSON.parse(localStorage.getItem("references")) || [];
-
 function addReference() {
   const input = document.getElementById("newReference");
   const value = input.value.trim();
@@ -343,7 +314,167 @@ function updateReferenceDisplay() {
   });
 }
 
+function showAutoSaveMessage() {
+  let msg = document.getElementById("autoSaveMsg");
+  if (!msg) {
+    msg = document.createElement("div");
+    msg.id = "autoSaveMsg";
+    msg.style.position = "fixed";
+    msg.style.bottom = "10px";
+    msg.style.right = "10px";
+    msg.style.background = "#2ecc71";
+    msg.style.color = "#fff";
+    msg.style.padding = "10px 20px";
+    msg.style.borderRadius = "5px";
+    msg.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
+    msg.style.zIndex = "10000";
+    msg.style.fontSize = "14px";
+    msg.style.transition = "opacity 0.3s";
+    msg.style.opacity = "0";
+    document.body.appendChild(msg);
+  }
+
+  msg.textContent = "💾 Guardado automáticamente";
+  msg.style.opacity = "1";
+
+  setTimeout(() => {
+    msg.style.opacity = "0";
+  }, 2500);
+}
+
+function toggleReadOnly() {
+  isReadOnly = !isReadOnly;
+  getEditor().contentEditable = !isReadOnly;
+  document.getElementById("header").contentEditable = !isReadOnly;
+  document.getElementById("footer").contentEditable = !isReadOnly;
+
+  alert(isReadOnly ? "Modo solo lectura activado." : "Modo edición activado.");
+}
+
+function insertEquation() {
+  insertHTMLAtCursor(`
+    <div class="equation" contenteditable="true">E = mc²</div>
+  `);
+}
+
+function insertTable(rows = 2, cols = 2) {
+  const table = document.createElement("table");
+  table.style.borderCollapse = "collapse";
+  table.style.margin = "10px 0";
+  table.style.width = "100%";
+
+  for (let i = 0; i < rows; i++) {
+    const tr = document.createElement("tr");
+    for (let j = 0; j < cols; j++) {
+      const td = document.createElement("td");
+      td.contentEditable = "true";
+      td.style.border = "1px solid #333";
+      td.style.padding = "5px";
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  insertNodeAtCursor(table);
+}
+
+function searchInDocument() {
+  const term = document.getElementById("searchInput").value.toLowerCase();
+  const editor = getEditor();
+  const text = editor.innerText.toLowerCase();
+
+  if (!term) {
+    editor.innerHTML = editor.innerHTML.replace(/<mark>(.*?)<\/mark>/g, '$1');
+    return;
+  }
+
+  // Restaurar sin marcas
+  editor.innerHTML = editor.innerHTML.replace(/<mark>(.*?)<\/mark>/g, '$1');
+
+  // Marcar nuevas ocurrencias
+  const regex = new RegExp(`(${term})`, "gi");
+  editor.innerHTML = editor.innerHTML.replace(regex, "<mark>$1</mark>");
+}
+
+let editSeconds = 0;
+setInterval(() => {
+  editSeconds++;
+  const minutes = Math.floor(editSeconds / 60);
+  document.getElementById("editMinutes").textContent = minutes;
+}, 60000); // cada minuto
+
+// Guardado automático cada 30s si hubo cambios
+setInterval(() => {
+  if (isTyping) {
+    saveContent();
+    showAutoSaveMessage();
+    isTyping = false;
+  }
+}, 30000);
+
+getEditor().addEventListener("input", () => {
+  isTyping = true;
+  clearTimeout(window._typeTimer);
+  window._typeTimer = setTimeout(saveState, 400);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key === "z") {
+    e.preventDefault(); undo();
+  }
+  if (e.ctrlKey && (e.key === "y" || (e.shiftKey && e.key === "Z"))) {
+    e.preventDefault(); redo();
+  }
+  if (e.ctrlKey && e.key === "b") {
+    e.preventDefault();
+    document.execCommand("bold");
+  }
+
+  if (e.ctrlKey && e.key === "i") {
+    e.preventDefault();
+    document.execCommand("italic");
+  }
+
+  if (e.ctrlKey && e.key === "u") {
+    e.preventDefault();
+    document.execCommand("underline");
+  }
+
+  if (e.ctrlKey && e.altKey && e.key === "m") {
+    e.preventDefault();
+    insertEMC();
+  }
+});
+
+document.addEventListener("mouseup", e => {
+  const selection = window.getSelection();
+  const text = selection.toString();
+  const menu = document.getElementById("textMenu");
+
+  if (text.length > 0 && getEditor().contains(selection.anchorNode)) {
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+
+    menu.style.top = `${window.scrollY + rect.top - 40}px`;
+    menu.style.left = `${window.scrollX + rect.left}px`;
+    menu.style.display = "block";
+  } else {
+    menu.style.display = "none";
+  }
+});
+
 window.addEventListener("load", () => {
   updateReferenceList();
   updateReferenceDisplay();
+  getEditor().focus();
+});
+
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("editorContent");
+  if (saved) getEditor().innerHTML = saved;
+  updateCounter();
+
+  // Dark mode
+  const darkPref = localStorage.getItem("darkMode");
+  if (darkPref === "true") document.body.classList.add("dark");
 });

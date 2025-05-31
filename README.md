@@ -27,5 +27,7 @@ Este es un sitio web de escritura desarrollado con JS vanila, HTML5 y CSS3 que p
 Ingresa al link https://cientificword.vercel.app y trabaja en tus proyectos, papers o trabajos universitarios
 
 ✨ Hecho con ❤️ por Lucas Messina
+
 📧 Contacto: lucastotomessina@gmail.com
+
 🔗 Sitio Web: https://cientificword.vercel.app

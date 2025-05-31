@@ -38,26 +38,18 @@ body.dark {
   flex-direction: column;
 }
 
-.section-toggle {
-  background: var(--primary);
-  color: white;
-  font-weight: bold;
-  padding: 6px 10px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  margin-bottom: 5px;
-  transition: background 0.3s;
-}
-
-.section-toggle:hover {
-  background: var(--primary-hover);
-}
-
 .section {
-  display: none;
+  display: flex;
   gap: 5px;
   flex-wrap: wrap;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.section.open {
+  max-height: 200px; /* o ajustable */
+  opacity: 1;
 }
 
 .section button {
@@ -291,4 +283,167 @@ body.landscape #editor {
 body.letter #editor {
   width: 21.6cm;
   min-height: 27.9cm;
+}
+
+.equation {
+  text-align: center;
+  font-size: 1.4em;
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  margin: 20px 0;
+}
+
+mark {
+  background-color: yellow;
+  padding: 0 2px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.group-title {
+  font-weight: bold;
+  margin-right: 10px;
+  color: var(--primary);
+  font-size: 14px;
+  min-width: 80px;
+}
+
+#controls {
+  padding: 10px 15px;
+  background: #f9f9f9;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#controls button {
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  background: var(--primary);
+  color: white;
+  transition: background 0.3s;
+}
+
+#controls button:hover {
+  background: var(--primary-hover);
+}
+
+#controls select,
+#controls input[type="number"],
+#controls input[type="text"] {
+  padding: 5px 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+}
+
+
+.group {
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  margin: 5px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+body.dark .group {
+  background: #1f1f1f;
+  border-color: var(--border-dark);
+}
+
+.section-toggle {
+  padding: 10px 14px;
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.section-toggle:hover {
+  background: var(--primary-hover);
+}
+
+.section-toggle::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.section-content.open ~ .section-toggle::before {
+  transform: rotate(90deg);
+}
+
+.section-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.section-content.open {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.section-content button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.section-content button:hover {
+  background: var(--accent-hover);
+}
+
+@media (min-height: 900px) {
+  #editor {
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  #toolbar, #controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #editor {
+    width: 95%;
+    padding: 1cm;
+  }
+
+  #controls button, .section-toggle {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  #header, #footer {
+    font-size: 12px;
+    padding: 6px;
+  }
 }

@@ -8,17 +8,20 @@
 <body>
   <div id="toolbar" contenteditable="false">
     <div class="group">
-      <button class="section-toggle">▶ Mate₂máticas</button>
-      <div class="section">
-        <button onclick="insertSup()">x²</button>
-        <button onclick="insertSub()">H₂O</button>
-        <button onclick="insertFraction()">a/b</button>
-        <button onclick="insertEMC()">E = mc²</button>
-        <button onclick="insertSymbol('∑')">∑</button>
-        <button onclick="insertSymbol('∂')">∂</button>
-        <button onclick="insertSymbol('∫')">∫</button>
-        <button onclick="insertSymbol('∆')">∆</button>
-        <button onclick="insertSymbol('∞')">∞</button>
+      <button class="section-toggle">
+        ▶ Matemáticas
+      </button>
+      <div class="section-content">
+        <button onclick="insertSup()" title="Superíndice">x²</button>
+        <button onclick="insertSub()" title="Subíndice">H₂O</button>
+        <button onclick="insertFraction()" title="Fracción">a/b</button>
+        <button onclick="insertEMC()" title="E = mc²">E=mc²</button>
+        <button onclick="insertSymbol('∑')" title="Suma">∑</button>
+        <button onclick="insertSymbol('∂')" title="Derivada">∂</button>
+        <button onclick="insertSymbol('∫')" title="Integral">∫</button>
+        <button onclick="insertSymbol('∆')" title="Delta">∆</button>
+        <button onclick="insertSymbol('∞')" title="Infinito">∞</button>
+        <button onclick="insertEquation()" title="Ecuación destacada">≡</button>
       </div>
     </div>
 
@@ -54,37 +57,60 @@
   </div>
 
   <div id="controls">
-    <button onclick="saveContent()">💾 Guardar ahora</button>
-    <button onclick="resetContent()">🔁 Reiniciar documento</button>
-    <button onclick="exportHTML()">📄 Exportar HTML</button>
-    <button onclick="exportDocx()">📃 Exportar DOCX</button>
-    <button onclick="exportPDF()">📕 Exportar PDF</button>
-    <button onclick="openPreview()">🖼 Vista previa</button>
-    <button onclick="toggleDarkMode()">🌙 Modo oscuro</button>
-    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="insertImage(event)">
-    <button onclick="document.getElementById('imageInput').click()">🖼 Insertar imagen</button>
-    <button onclick="insertHeading(1)">Título 1</button>
-    <button onclick="insertHeading(2)">Título 2</button>
-    <button onclick="insertHeading(3)">Título 3</button>
+    <div class="control-group">
+      <span class="group-title">Archivo</span>
+      <button onclick="saveContent()" title="Guardar en navegador">💾</button>
+      <button onclick="resetContent()" title="Reiniciar documento">🔁</button>
+      <button onclick="saveDocument()" title="Guardar versión completa">💾+</button>
+      <button onclick="toggleHistory()" title="Historial de versiones">🕰️</button>
+    </div>
 
-    <select id="pageSize" onchange="updatePageStyle()">
-      <option value="A4">📄 A4</option>
-      <option value="letter">📄 Carta</option>
-    </select>
+    <div class="control-group">
+      <span class="group-title">Exportar</span>
+      <button onclick="exportHTML()" title="Exportar como HTML">📄</button>
+      <button onclick="exportDocx()" title="Exportar como Word">📃</button>
+      <button onclick="exportPDF()" title="Exportar como PDF">📕</button>
+    </div>
 
-    <select id="orientation" onchange="updatePageStyle()">
-      <option value="portrait">📐 Vertical</option>
-      <option value="landscape">📐 Horizontal</option>
-    </select>
+    <div class="control-group">
+      <span class="group-title">Formato</span>
+      <button onclick="insertHeading(1)" title="Título 1">H1</button>
+      <button onclick="insertHeading(2)" title="Título 2">H2</button>
+      <button onclick="insertHeading(3)" title="Título 3">H3</button>
+      <button onclick="insertTable()" title="Insertar tabla">📊</button>
+      <button onclick="insertImageClick()" title="Insertar imagen">🖼</button>
+      <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="insertImage(event)">
+    </div>
 
-    <label>Márgenes:
-      <input type="number" id="marginInput" value="2" min="0" max="10" step="0.1" onchange="updatePageStyle()"> cm
-    </label>
+    <div class="control-group">
+      <span class="group-title">Vista</span>
+      <button onclick="openPreview()" title="Vista previa">🖼</button>
+      <button onclick="toggleDarkMode()" title="Modo oscuro">🌙</button>
+      <button onclick="toggleReadOnly()" title="Modo solo lectura">🔒</button>
+      <button onclick="undo()" title="Deshacer">⏪</button>
+      <button onclick="redo()" title="Rehacer">⏩</button>
+    </div>
 
-    <button onclick="undo()">⏪ Deshacer</button>
-    <button onclick="redo()">⏩ Rehacer</button>
-    <button onclick="saveDocument()">💾 Guardar</button>
-    <button onclick="toggleHistory()">🕰️ Mostrar historial</button>
+    <div class="control-group">
+      <span class="group-title">Página</span>
+      <select id="pageSize" onchange="updatePageStyle()" title="Tamaño de hoja">
+        <option value="A4">A4</option>
+        <option value="letter">Carta</option>
+      </select>
+
+      <select id="orientation" onchange="updatePageStyle()" title="Orientación">
+        <option value="portrait">Vertical</option>
+        <option value="landscape">Horizontal</option>
+      </select>
+
+      <label title="Márgenes">
+        <input type="number" id="marginInput" value="2" min="0" max="10" step="0.1"> cm
+      </label>
+    </div>
+
+    <div class="control-group">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar..." oninput="searchInDocument()">
+    </div>
   </div>
 
   <div id="historyPanel">
@@ -116,12 +142,18 @@
     Caracteres (con espacios): <span id="charCount">0</span> |
     Caracteres (sin espacios): <span id="charCountNoSpaces">0</span>
   </div>
+  <div id="editTime">⏱ Tiempo editando: <span id="editMinutes">0</span> min</div>
 
   <div id="previewModal" class="modal">
     <div class="modal-content">
       <span class="close-button" onclick="closePreview()">&times;</span>
       <div id="previewContent"></div>
     </div>
+  </div>
+  <div id="textMenu" style="display:none; position:absolute; background:#333; color:white; padding:5px 10px; border-radius:5px; z-index:9999;">
+    <button onclick="document.execCommand('bold')">B</button>
+    <button onclick="document.execCommand('italic')">I</button>
+    <button onclick="document.execCommand('underline')">U</button>
   </div>
 
   <script src="script.js"></script>
