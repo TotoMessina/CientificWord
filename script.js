@@ -2,13 +2,14 @@
 const getEditor = () => document.getElementById("editor");
 let isReadOnly = false;
 // Inserciones rápidas
-const insertSup = () => insertHTMLAtCursor(`<sup contenteditable="true">2</sup>`);
-const insertSub = () => insertHTMLAtCursor(`<sub contenteditable="true">2</sub>`);
+const insertSup = () => insertHTMLAtCursor(`<sup contenteditable="true">x</sup>`);
+const insertSub = () => insertHTMLAtCursor(`<sub contenteditable="true">x</sub>`);
 const insertFraction = () => insertHTMLAtCursor(`
-  <span class="fraction">
+  <span class="fraction" contenteditable="false">
     <span class="top" contenteditable="true">a</span>
     <span class="bottom" contenteditable="true">b</span>
-  </span>`);
+  </span>
+`);
 const insertSymbol = sym => insertHTMLAtCursor(sym);
 const insertEMC = () => insertHTMLAtCursor(`E = mc<sup contenteditable="true">2</sup>`);
 // Historial y deshacer
@@ -25,6 +26,16 @@ document.querySelectorAll(".section-toggle").forEach(button => {
     content.classList.toggle("open");
   });
 });
+// Evita que al hacer clic en cualquier botón de toolbar o controles se pierda el foco
+document.querySelectorAll('#toolbar button, #controls button').forEach(btn => {
+  btn.addEventListener('mousedown', e => {
+    e.preventDefault();
+    // De esta forma, el botón nunca roba el foco del editor.
+    // Luego, el event 'click' seguirá ejecutándose normalmente.
+  });
+});
+
+let editSeconds = 0;
 
 // Títulos numerados
 let sectionNumbers = [0, 0, 0];
@@ -33,23 +44,38 @@ let references = JSON.parse(localStorage.getItem("references")) || [];
 // Inserción HTML
 function insertHTMLAtCursor(html) {
   const editor = getEditor();
-  if (document.activeElement !== editor) editor.focus();
+  // Si por alguna razón no está enfocado, lo enfocamos
+  if (document.activeElement !== editor) {
+    editor.focus();
+  }
 
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
   const range = sel.getRangeAt(0);
   range.deleteContents();
 
-  const el = document.createElement("div");
-  el.innerHTML = html;
+  // Creamos un contenedor temporal y vamos transfiriendo los nodos
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
   const frag = document.createDocumentFragment();
-  let node;
-  while ((node = el.firstChild)) frag.appendChild(node);
+  let node, lastNode;
+  while ((node = temp.firstChild)) {
+    lastNode = frag.appendChild(node);
+  }
 
+  // Insertamos el fragmento justo donde estaba la selección
   range.insertNode(frag);
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
+
+  // Movemos el cursor justo después del último nodo insertado
+  if (lastNode) {
+    const newRange = document.createRange();
+    newRange.setStartAfter(lastNode);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  }
+
+  updateCounter(); // Si quieres que el contador se actualice en cada inserción
 }
 
 // Contador
@@ -396,7 +422,6 @@ function searchInDocument() {
   editor.innerHTML = editor.innerHTML.replace(regex, "<mark>$1</mark>");
 }
 
-let editSeconds = 0;
 setInterval(() => {
   editSeconds++;
   const minutes = Math.floor(editSeconds / 60);
